@@ -14,6 +14,7 @@
 		44345FC622171E4300F92DDE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 44345FC422171E4300F92DDE /* LaunchScreen.storyboard */; };
 		44345FC922171E4300F92DDE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FC822171E4300F92DDE /* main.m */; };
 		44345FD322171E4300F92DDE /* PYLAspectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FD222171E4300F92DDE /* PYLAspectTests.m */; };
+		44345FDF22171E7000F92DDE /* NSObject+Aspect.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FDE22171E7000F92DDE /* NSObject+Aspect.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,8 @@
 		44345FCE22171E4300F92DDE /* PYLAspectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PYLAspectTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44345FD222171E4300F92DDE /* PYLAspectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PYLAspectTests.m; sourceTree = "<group>"; };
 		44345FD422171E4300F92DDE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		44345FDD22171E7000F92DDE /* NSObject+Aspect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+Aspect.h"; sourceTree = "<group>"; };
+		44345FDE22171E7000F92DDE /* NSObject+Aspect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+Aspect.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +93,8 @@
 				44345FC422171E4300F92DDE /* LaunchScreen.storyboard */,
 				44345FC722171E4300F92DDE /* Info.plist */,
 				44345FC822171E4300F92DDE /* main.m */,
+				44345FDD22171E7000F92DDE /* NSObject+Aspect.h */,
+				44345FDE22171E7000F92DDE /* NSObject+Aspect.m */,
 			);
 			path = PYLAspect;
 			sourceTree = "<group>";
@@ -206,6 +211,7 @@
 				44345FBE22171E4200F92DDE /* ViewController.m in Sources */,
 				44345FC922171E4300F92DDE /* main.m in Sources */,
 				44345FBB22171E4200F92DDE /* AppDelegate.m in Sources */,
+				44345FDF22171E7000F92DDE /* NSObject+Aspect.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
