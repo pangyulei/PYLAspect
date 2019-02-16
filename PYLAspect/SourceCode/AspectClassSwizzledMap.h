@@ -20,7 +20,7 @@ dispatch_queue_t _aspect_class_queue() {
     return q;
 }
 
-NSString* _aspect_class_token(Class cls, SEL sel) {
+NSString* _aspect_token(Class cls, SEL sel) {
     return [NSString stringWithFormat:@"%s_%s", class_getName(cls), sel_getName(sel)];
 }
 

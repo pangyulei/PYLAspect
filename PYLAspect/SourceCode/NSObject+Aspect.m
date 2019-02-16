@@ -54,7 +54,7 @@
         }
         
         //储存信息
-        NSString *token = _aspect_class_token(self, sel);
+        NSString *token = _aspect_token(self, sel);
         AspectSwizzledInfo *info = _aspect_class_swizzled_info(token);
         if (info) {
             //之前 swizzle 过了直接更新就好了
@@ -84,7 +84,118 @@
 }
 
 - (void)aspect_selector:(SEL)sel options:(AspectOptions)opt block:(id)blk {
+    if (!sel || !blk) {
+        return;
+    }
+    _safe_thread_perform(^{
+        Class cls;
+        Method meth = NULL;
+        NSMethodSignature *sign;
+        if ([self respondsToSelector:sel]) {
+            //替换实例方法
+            cls = object_getClass(self);
+            meth = class_getInstanceMethod(cls, sel);
+            sign = [self methodSignatureForSelector:sel];
+        }
+        
+        if (!meth) {
+            LOG_ERROR(@"方法找不到");
+            return;
+        }
+        
+        IMP originSelIMP = method_getImplementation(meth);
+        const char *types = method_getTypeEncoding(meth);
+        
+        //校验 blk 与 meth 参数是否一致
+        NSMethodSignature *blkSign = _aspect_blockMethodSignature(blk);
+        if (!_compareSignature(blkSign, sign)) {
+            LOG_ERROR(@"block 签名与原方法不一致");
+            return;
+        }
+        //创建子类
+        NSString *subclassname = subclass_name(cls);
+        Class subcls = objc_getClass(subclassname.UTF8String);
+        if (nil == subcls) {
+            subcls = objc_allocateClassPair(cls, subclassname.UTF8String, 0);
+            if (!subcls) {
+                NSLog(@"子类创建失败");
+                return;
+            }
+            objc_registerClassPair(subcls);
+        }
+        //isa 替换
+        object_setClass(self, subcls);
+        
+        //储存信息
+        NSString *token = _aspect_token(subcls, sel);
+        NSMutableDictionary *map = [self aspect_swizzledInfoMap];
+        if (!map) {
+            map = @{}.mutableCopy;
+        }
+        AspectSwizzledInfo *info = map[token];
+        if (info) {
+            //之前 swizzle 过了直接更新就好了
+            info.opt = opt;
+            info.block = blk;
+            map[token] = info;
+            [self setAspect_swizzledInfoMap:map];
+            return;
+        }
+        
+        //sel -> _msgForward
+        class_replaceMethod(subcls, sel, _objc_msgForward, types);
+        
+        //_msgForward -> 我自己的 forward, 主动调用 block 等业务, 以及最终调用之前 swizzle 掉的方法
+        SEL fowardSel = @selector(forwardInvocation:);
+        class_replaceMethod(subcls, fowardSel, (IMP)_instance_aspectForwardInvocation, "@:@");
+        
+        //aliasSel -> originIMP
+        SEL aliasSel = _aspect_alias_sel(sel);
+        class_replaceMethod(subcls, aliasSel, originSelIMP, types);
+        
+        info = [AspectSwizzledInfo new];
+        info.block = blk;
+        info.opt = opt;
+        info.aliasSel = aliasSel;
+        map[token] = info;
+        [self setAspect_swizzledInfoMap:map];
+        
+    });
+}
+
+void _instance_aspectForwardInvocation(NSObject *self, SEL sel, NSInvocation *anInvocation) {
+    NSString *token = _aspect_token(object_getClass(self), anInvocation.selector);
+    AspectSwizzledInfo *info = [self aspect_swizzledInfoMap][token];
+    if (!info) {
+        return;
+    }
+    if (info.opt & AspectOptionsReplace) {
+        //完全替换
+        _aspect_invokeBlockWithInvocation(info.block, anInvocation);
+        return;
+    }
     
+    if (info.opt & AspectOptionsBefore) {
+        //先调用 block
+        _aspect_invokeBlockWithInvocation(info.block, anInvocation);
+    }
+    
+    //再调用原来的实现
+    anInvocation.selector = info.aliasSel;
+    [anInvocation invoke];
+    
+    if (info.opt & AspectOptionsAfter) {
+        //再次调用 block
+        _aspect_invokeBlockWithInvocation(info.block, anInvocation);
+    }
+}
+
+NSString* subclass_name(Class superclass) {
+    NSString *prefix = @"aspect_subclass_";
+    if ([[NSString stringWithUTF8String:class_getName(superclass)] containsString:prefix]) {
+        return [NSString stringWithUTF8String:class_getName(superclass)];
+    }
+    return [NSString stringWithFormat:@"%@%s",prefix, class_getName(superclass)];
 }
 
 SEL _aspect_alias_sel(SEL sel) {
@@ -99,10 +210,10 @@ void _class_aspectForwardInvocation(Class self, SEL sel, NSInvocation *anInvocat
     NSString *token;
     if (object_isClass(anInvocation.target)) {
         //替换的是类中的类方法
-        token = _aspect_class_token(anInvocation.target, anInvocation.selector);
+        token = _aspect_token(anInvocation.target, anInvocation.selector);
     } else {
         //替换的是类中的实例方法
-        token = _aspect_class_token(object_getClass(anInvocation.target), anInvocation.selector);
+        token = _aspect_token(object_getClass(anInvocation.target), anInvocation.selector);
     }
     AspectSwizzledInfo *info = _aspect_class_swizzled_info(token);
     if (!info) {
@@ -189,5 +300,15 @@ void _safe_thread_perform(void(^blk)(void)) {
     blk();
     dispatch_semaphore_signal(sema);
 }
+
+- (void)setAspect_swizzledInfoMap:(NSMutableDictionary*)d {
+    objc_setAssociatedObject(self, @selector(aspect_swizzledInfoMap), d, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSMutableDictionary*)aspect_swizzledInfoMap {
+    //避免多个instance同时做改动
+    return [objc_getAssociatedObject(self, _cmd) mutableCopy];
+}
+
 
 @end
