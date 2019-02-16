@@ -49,7 +49,7 @@ struct AspectBlock {
 };
 typedef struct AspectBlock AspectBlock;
 
-NSMethodSignature * blockMethodSignature(id blk) {
+NSMethodSignature * _aspect_blockMethodSignature(id blk) {
     AspectBlock *aspectBlk = (__bridge void *)blk;
     //判断有没有 signature
     if (!(aspectBlk->flags & BLOCK_HAS_SIGNATURE)) {
