@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface Person : NSObject
 + (void)talk:(NSString *)a;
 - (void)fuck:(int)a;
+- (void)testBlock:(int(^)(int c, int b))ssss;
 @end
 
 NS_ASSUME_NONNULL_END

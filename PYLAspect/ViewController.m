@@ -30,6 +30,14 @@
         NSLog(@"a%d", a);
     }];
     [[Person new] fuck:4];
+    
+    typedef int(^blkt)(int, int);
+    [Person aspect_selector:@selector(testBlock:) options:AspectOptionsReplace block:^(blkt blkParam){
+        NSLog(@"add: %d", blkParam(1,2));
+    }];
+    [[Person new] testBlock:^int(int c, int b) {
+        return c+b;
+    }];
 }
 
 

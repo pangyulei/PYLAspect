@@ -12,7 +12,12 @@
 + (void)talk:(NSString *)a {
     NSLog(@"person call");
 }
+
 -(void)fuck:(int)a {
     NSLog(@"fuck called");
+}
+
+- (void)testBlock:(int(^)(int c, int b))ssss {
+    
 }
 @end
