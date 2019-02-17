@@ -55,31 +55,28 @@
         
         //储存信息
         NSString *token = _aspect_class_token(self, sel);
-        AspectSwizzledInfo *info = _aspect_class_swizzled_info(token);
-        if (info) {
-            //之前 swizzle 过了直接更新就好了
-            info.opt = opt;
-            info.block = blk;
-            _aspect_set_class_swizzled_info(token, info);
-            return;
-        }
+        bool already_swizzled = _aspect_class_swizzled_info(token) != nil;
         
-        //sel -> _msgForward
-        class_replaceMethod(cls, sel, _objc_msgForward, types);
-        
-        //_msgForward -> 我自己的 forward, 主动调用 block 等业务, 以及最终调用之前 swizzle 掉的方法
-        SEL fowardSel = @selector(forwardInvocation:);
-        class_replaceMethod(cls, fowardSel, (IMP)_class_aspectForwardInvocation, "@:@");
-        
-        //aliasSel -> originIMP
-        SEL aliasSel = _aspect_alias_sel(sel);
-        class_replaceMethod(cls, aliasSel, originSelIMP, types);
-        
-        info = [AspectSwizzledInfo new];
+        AspectSwizzledInfo *info = [AspectSwizzledInfo new];
         info.block = blk;
         info.opt = opt;
-        info.aliasSel = aliasSel;
+        info.aliasSel = _aspect_alias_sel(sel);
         _aspect_set_class_swizzled_info(token, info);
+        
+        if (already_swizzled) {
+            return;
+        } else {
+            //sel -> _msgForward
+            class_replaceMethod(cls, sel, _objc_msgForward, types);
+            
+            //_msgForward -> 我自己的 forward, 主动调用 block 等业务, 以及最终调用之前 swizzle 掉的方法
+            SEL fowardSel = @selector(forwardInvocation:);
+            class_replaceMethod(cls, fowardSel, (IMP)_class_aspectForwardInvocation, "@:@");
+            
+            //aliasSel -> originIMP
+            class_replaceMethod(cls, _aspect_alias_sel(sel), originSelIMP, types);
+        }
+        
     });
 }
 
