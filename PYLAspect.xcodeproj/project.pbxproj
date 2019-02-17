@@ -15,8 +15,8 @@
 		44345FC922171E4300F92DDE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FC822171E4300F92DDE /* main.m */; };
 		44345FD322171E4300F92DDE /* PYLAspectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FD222171E4300F92DDE /* PYLAspectTests.m */; };
 		44345FDF22171E7000F92DDE /* NSObject+Aspect.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FDE22171E7000F92DDE /* NSObject+Aspect.m */; };
-		44345FE42217596300F92DDE /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FE32217596300F92DDE /* Person.m */; };
 		44345FE722176DE600F92DDE /* AspectSwizzledInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FE622176DE600F92DDE /* AspectSwizzledInfo.m */; };
+		44345FF022195E5700F92DDE /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 44345FEF22195E5700F92DDE /* Person.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,12 +46,12 @@
 		44345FDD22171E7000F92DDE /* NSObject+Aspect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+Aspect.h"; sourceTree = "<group>"; };
 		44345FDE22171E7000F92DDE /* NSObject+Aspect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+Aspect.m"; sourceTree = "<group>"; };
 		44345FE12217491000F92DDE /* AspectBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AspectBlock.h; sourceTree = "<group>"; };
-		44345FE22217596300F92DDE /* Person.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
-		44345FE32217596300F92DDE /* Person.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
 		44345FE522176DE600F92DDE /* AspectSwizzledInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AspectSwizzledInfo.h; sourceTree = "<group>"; };
 		44345FE622176DE600F92DDE /* AspectSwizzledInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AspectSwizzledInfo.m; sourceTree = "<group>"; };
 		44345FE822176E7400F92DDE /* AspectOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AspectOptions.h; sourceTree = "<group>"; };
 		44345FE9221779E800F92DDE /* AspectClassSwizzledMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AspectClassSwizzledMap.h; sourceTree = "<group>"; };
+		44345FEE22195E5700F92DDE /* Person.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
+		44345FEF22195E5700F92DDE /* Person.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,8 +97,6 @@
 				44345FBA22171E4200F92DDE /* AppDelegate.m */,
 				44345FBC22171E4200F92DDE /* ViewController.h */,
 				44345FBD22171E4200F92DDE /* ViewController.m */,
-				44345FE22217596300F92DDE /* Person.h */,
-				44345FE32217596300F92DDE /* Person.m */,
 				44345FBF22171E4200F92DDE /* Main.storyboard */,
 				44345FC222171E4300F92DDE /* Assets.xcassets */,
 				44345FC422171E4300F92DDE /* LaunchScreen.storyboard */,
@@ -113,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				44345FD222171E4300F92DDE /* PYLAspectTests.m */,
+				44345FEE22195E5700F92DDE /* Person.h */,
+				44345FEF22195E5700F92DDE /* Person.m */,
 				44345FD422171E4300F92DDE /* Info.plist */,
 			);
 			path = PYLAspectTests;
@@ -234,7 +234,6 @@
 			files = (
 				44345FBE22171E4200F92DDE /* ViewController.m in Sources */,
 				44345FC922171E4300F92DDE /* main.m in Sources */,
-				44345FE42217596300F92DDE /* Person.m in Sources */,
 				44345FBB22171E4200F92DDE /* AppDelegate.m in Sources */,
 				44345FE722176DE600F92DDE /* AspectSwizzledInfo.m in Sources */,
 				44345FDF22171E7000F92DDE /* NSObject+Aspect.m in Sources */,
@@ -245,6 +244,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44345FF022195E5700F92DDE /* Person.m in Sources */,
 				44345FD322171E4300F92DDE /* PYLAspectTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

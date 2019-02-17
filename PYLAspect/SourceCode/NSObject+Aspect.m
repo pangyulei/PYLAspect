@@ -54,7 +54,7 @@
         }
         
         //储存信息
-        NSString *token = _aspect_token(self, sel);
+        NSString *token = _aspect_class_token(self, sel);
         AspectSwizzledInfo *info = _aspect_class_swizzled_info(token);
         if (info) {
             //之前 swizzle 过了直接更新就好了
@@ -112,6 +112,7 @@
             LOG_ERROR(@"block 签名与原方法不一致");
             return;
         }
+        
         //创建子类
         NSString *subclassname = subclass_name(cls);
         Class subcls = objc_getClass(subclassname.UTF8String);
@@ -122,49 +123,43 @@
                 return;
             }
             objc_registerClassPair(subcls);
+            
+            //sel -> _msgForward
+            class_replaceMethod(subcls, sel, _objc_msgForward, types);
+            
+            //_msgForward -> 我自己的 forward, 主动调用 block 等业务, 以及最终调用之前 swizzle 掉的方法
+            SEL fowardSel = @selector(forwardInvocation:);
+            class_replaceMethod(subcls, fowardSel, (IMP)_instance_aspectForwardInvocation, "@:@");
+            
+            //aliasSel -> originIMP
+            class_replaceMethod(subcls, _aspect_alias_sel(sel), originSelIMP, types);
         }
+        
         //isa 替换
         object_setClass(self, subcls);
         
         //储存信息
-        NSString *token = _aspect_token(subcls, sel);
+        NSString *token = _aspect_inst_token(self, sel);
         NSMutableDictionary *map = [self aspect_swizzledInfoMap];
         if (!map) {
             map = @{}.mutableCopy;
         }
-        AspectSwizzledInfo *info = map[token];
-        if (info) {
-            //之前 swizzle 过了直接更新就好了
-            info.opt = opt;
-            info.block = blk;
-            map[token] = info;
-            [self setAspect_swizzledInfoMap:map];
-            return;
-        }
         
-        //sel -> _msgForward
-        class_replaceMethod(subcls, sel, _objc_msgForward, types);
-        
-        //_msgForward -> 我自己的 forward, 主动调用 block 等业务, 以及最终调用之前 swizzle 掉的方法
-        SEL fowardSel = @selector(forwardInvocation:);
-        class_replaceMethod(subcls, fowardSel, (IMP)_instance_aspectForwardInvocation, "@:@");
-        
-        //aliasSel -> originIMP
-        SEL aliasSel = _aspect_alias_sel(sel);
-        class_replaceMethod(subcls, aliasSel, originSelIMP, types);
-        
-        info = [AspectSwizzledInfo new];
+        AspectSwizzledInfo *info = [AspectSwizzledInfo new];
         info.block = blk;
         info.opt = opt;
-        info.aliasSel = aliasSel;
+        info.aliasSel = _aspect_alias_sel(sel);
         map[token] = info;
         [self setAspect_swizzledInfoMap:map];
-        
     });
 }
 
+NSString* _aspect_inst_token(NSObject *inst, SEL sel) {
+    return [NSString stringWithFormat:@"%p_%s", inst, sel_getName(sel)];
+}
+
 void _instance_aspectForwardInvocation(NSObject *self, SEL sel, NSInvocation *anInvocation) {
-    NSString *token = _aspect_token(object_getClass(self), anInvocation.selector);
+    NSString *token = _aspect_inst_token(self, anInvocation.selector);
     AspectSwizzledInfo *info = [self aspect_swizzledInfoMap][token];
     if (!info) {
         return;
@@ -210,10 +205,10 @@ void _class_aspectForwardInvocation(Class self, SEL sel, NSInvocation *anInvocat
     NSString *token;
     if (object_isClass(anInvocation.target)) {
         //替换的是类中的类方法
-        token = _aspect_token(anInvocation.target, anInvocation.selector);
+        token = _aspect_class_token(anInvocation.target, anInvocation.selector);
     } else {
         //替换的是类中的实例方法
-        token = _aspect_token(object_getClass(anInvocation.target), anInvocation.selector);
+        token = _aspect_class_token(object_getClass(anInvocation.target), anInvocation.selector);
     }
     AspectSwizzledInfo *info = _aspect_class_swizzled_info(token);
     if (!info) {
@@ -272,10 +267,10 @@ bool _compareSignature(NSMethodSignature *blkSign, NSMethodSignature *sign) {
         LOG_ERROR(@"block 参数个数不一致");
         return false;
     }
-    if (strcmp(blkSign.methodReturnType, sign.methodReturnType) != 0) {
-        LOG_ERROR(@"block 返回值不一致");
-        return false;
-    }
+//    if (strcmp(blkSign.methodReturnType, sign.methodReturnType) != 0) {
+//        LOG_ERROR(@"block 返回值不一致");
+//        return false;
+//    }
     for (NSUInteger i=1;i<blkSign.numberOfArguments;i++) {
         const char *blkArg = [blkSign getArgumentTypeAtIndex:i];
         const char *arg = [sign getArgumentTypeAtIndex:i+1];
